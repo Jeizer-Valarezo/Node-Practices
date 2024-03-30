@@ -3,13 +3,16 @@ import { createServer } from "node:http";
 const server = createServer((request, response) => {
     console.log("Request received");
 
-    response.statusCode= 200;
+    response.statusCode = 200;
 
-    response.setHeader("Content-type", "text/html");
+    response.setHeader("Content-Type", "application/json"); 
+    response.setHeader("Location", "Mars");
 
-    response.end("<html><body><h1>Este server esta ejecutandose con Node</h1></body></html>")
+    const responseBody = JSON.stringify({ message: "Server running on Mars" }); 
+
+    response.end(responseBody);
 });
 
 server.listen(3000, () => {
-    console.log("Server ejecutandose en http://localhost:3000")
-})
+    console.log("Server running at http://localhost:3000");
+});
