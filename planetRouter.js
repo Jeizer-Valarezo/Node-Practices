@@ -3,7 +3,6 @@ const Joi = require('joi');
 
 const router = express.Router();
 
-// Dummy database of planets
 let planets = [
   {
     id: 1,
@@ -15,13 +14,11 @@ let planets = [
   },
 ];
 
-// Joi schema for planet validation
 const planetSchema = Joi.object({
   id: Joi.number().integer().min(1),
   name: Joi.string().required(),
 });
 
-// Middleware to validate planet data
 const validatePlanet = (req, res, next) => {
   const { error } = planetSchema.validate(req.body);
   if (error) {
@@ -30,7 +27,6 @@ const validatePlanet = (req, res, next) => {
   next();
 };
 
-// Routes
 router.get('/api/planets', (req, res) => {
   res.json(planets);
 });
