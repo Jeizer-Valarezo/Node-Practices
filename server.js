@@ -1,6 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const planetRouter = require('./planetRouter');
+const router = require('./planetRouter');
+
+const planetRouter = router
 
 
 dotenv.config();
