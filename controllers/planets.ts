@@ -1,51 +1,75 @@
 import { Request, Response } from 'express';
+import db from './db'; 
 
-let planets = [
-  {
-    id: 1,
-    name: "Earth",
-  },
-  {
-    id: 2,
-    name: "Mars",
-  },
-];
-
-export const getAll = (req: Request, res: Response) => {
-  res.json(planets);
-};
-
-export const getOneById = (req: Request, res: Response) => {
-  const planet = planets.find(p => p.id === parseInt(req.params.id));
-  if (!planet) {
-    return res.status(404).json({ error: 'Planet not found' });
+export const getAll = async (req: Request, res: Response) => {
+  try {
+    const planets = await db.any('SELECT * FROM planets');
+    res.json(planets);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  res.json(planet);
 };
 
-export const create = (req: Request, res: Response) => {
+export const getOneById = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  try {
+    const planet = await db.oneOrNone('SELECT * FROM planets WHERE id = $1', id);
+    if (!planet) {
+      return res.status(404).json({ error: 'Planet not found' });
+    }
+    res.json(planet);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const create = async (req: Request, res: Response) => {
   const { name } = req.body;
-  const id = planets.length + 1;
-  planets.push({ id, name });
-  res.status(201).json({ msg: 'Planet created successfully' });
+  try {
+    await db.none('INSERT INTO planets (name) VALUES ($1)', name);
+    res.status(201).json({ msg: 'Planet created successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
-export const updateById = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const planetIndex = planets.findIndex(p => p.id === parseInt(id));
-  if (planetIndex === -1) {
-    return res.status(404).json({ error: 'Planet not found' });
+export const updateById = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  const { name } = req.body;
+  try {
+    await db.none('UPDATE planets SET name = $1 WHERE id = $2', [name, id]);
+    res.status(200).json({ msg: 'Planet updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  planets[planetIndex].name = req.body.name;
-  res.status(200).json({ msg: 'Planet updated successfully' });
 };
 
-export const deleteById = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const planetIndex = planets.findIndex(p => p.id === parseInt(id));
-  if (planetIndex === -1) {
-    return res.status(404).json({ error: 'Planet not found' });
+export const deleteById = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  try {
+    await db.none('DELETE FROM planets WHERE id = $1', id);
+    res.status(200).json({ msg: 'Planet deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  planets.splice(planetIndex, 1);
-  res.status(200).json({ msg: 'Planet deleted successfully' });
+};
+
+export const setupDb = async () => {
+  try {
+    await db.none(`
+      DROP TABLE IF EXISTS planets;
+
+      CREATE TABLE planets (
+        id SERIAL NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL
+      );
+    `);
+
+    await db.none(`INSERT INTO planets (name) VALUES ('Earth')`);
+    await db.none(`INSERT INTO planets (name) VALUES ('Mars')`);
+
+    console.log('Database setup completed');
+  } catch (error) {
+    console.error('Error setting up database:', error.message);
+  }
 };

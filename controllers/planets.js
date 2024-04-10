@@ -1,54 +1,77 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteById = exports.updateById = exports.create = exports.getOneById = exports.getAll = void 0;
+const { Request, Response } = require('express');
+const db = require('./db');
 
-var planets = [
-    {
-        id: 1,
-        name: "Earth",
-    },
-    {
-        id: 2,
-        name: "Mars",
-    },
-];
-
-var getAll = function (req, res) {
+const getAll = async (req, res) => {
+  try {
+    const planets = await db.any('SELECT * FROM planets');
     res.json(planets);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
-exports.getAll = getAll;
-var getOneById = function (req, res) {
-    var planet = planets.find(function (p) { return p.id === parseInt(req.params.id); });
+
+const getOneById = async (req, res) => {
+  const id = parseInt(req.params.id);
+  try {
+    const planet = await db.oneOrNone('SELECT * FROM planets WHERE id = $1', id);
     if (!planet) {
-        return res.status(404).json({ error: 'Planet not found' });
+      return res.status(404).json({ error: 'Planet not found' });
     }
     res.json(planet);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
-exports.getOneById = getOneById;
-var create = function (req, res) {
-    var name = req.body.name;
-    var id = planets.length + 1;
-    planets.push({ id: id, name: name });
+
+const create = async (req, res) => {
+  const { name } = req.body;
+  try {
+    await db.none('INSERT INTO planets (name) VALUES ($1)', name);
     res.status(201).json({ msg: 'Planet created successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
-exports.create = create;
-var updateById = function (req, res) {
-    var id = req.params.id;
-    var planetIndex = planets.findIndex(function (p) { return p.id === parseInt(id); });
-    if (planetIndex === -1) {
-        return res.status(404).json({ error: 'Planet not found' });
-    }
-    planets[planetIndex].name = req.body.name;
+
+const updateById = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { name } = req.body;
+  try {
+    await db.none('UPDATE planets SET name = $1 WHERE id = $2', [name, id]);
     res.status(200).json({ msg: 'Planet updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
-exports.updateById = updateById;
-var deleteById = function (req, res) {
-    var id = req.params.id;
-    var planetIndex = planets.findIndex(function (p) { return p.id === parseInt(id); });
-    if (planetIndex === -1) {
-        return res.status(404).json({ error: 'Planet not found' });
-    }
-    planets.splice(planetIndex, 1);
+
+const deleteById = async (req, res) => {
+  const id = parseInt(req.params.id);
+  try {
+    await db.none('DELETE FROM planets WHERE id = $1', id);
     res.status(200).json({ msg: 'Planet deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
-exports.deleteById = deleteById;
+
+const setupDb = async () => {
+  try {
+    await db.none(`
+      DROP TABLE IF EXISTS planets;
+
+      CREATE TABLE planets (
+        id SERIAL NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL
+      );
+    `);
+
+    await db.none(`INSERT INTO planets (name) VALUES ('Earth')`);
+    await db.none(`INSERT INTO planets (name) VALUES ('Mars')`);
+
+    console.log('Database setup completed');
+  } catch (error) {
+    console.error('Error setting up database:', error.message);
+  }
+};
+
+module.exports = { getAll, getOneById, create, updateById, deleteById, setupDb };

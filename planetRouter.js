@@ -3,15 +3,14 @@ const { getAll, getOneById, create, updateById, deleteById } = require('./contro
 
 const router = express.Router();
 
-// Routes
-router.get('/api/planets', getAll);
+router.get('/planets', getAll);
 
-router.get('/api/planets/:id', getOneById);
+router.get('/planets/:id', getOneById);
 
-router.post('/api/planets', create);
+router.post('/planets', create);
 
-router.put('/api/planets/:id', updateById);
+router.put('/planets/:id', updateById);
 
-router.delete('/api/planets/:id', deleteById);
+router.delete('/planets/:id', deleteById);
 
 module.exports = router;
