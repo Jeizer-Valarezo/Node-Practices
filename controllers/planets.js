@@ -54,6 +54,19 @@ const deleteById = async (req, res) => {
   }
 };
 
+const createImage = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const imagePath = req.file.path;
+
+  try {
+    await db.none('UPDATE planets SET image = $1 WHERE id = $2', [imagePath, id]);
+    res.status(201).json({ msg: 'Planet image uploaded successfully.' });
+  } catch (error) {
+    fs.unlinkSync(imagePath);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 const setupDb = async () => {
   try {
     await db.none(`
@@ -61,7 +74,8 @@ const setupDb = async () => {
 
       CREATE TABLE planets (
         id SERIAL NOT NULL PRIMARY KEY,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        image TEXT
       );
     `);
 
@@ -74,4 +88,4 @@ const setupDb = async () => {
   }
 };
 
-module.exports = { getAll, getOneById, create, updateById, deleteById, setupDb };
+module.exports = { getAll, getOneById, create, updateById, deleteById, createImage, setupDb };
