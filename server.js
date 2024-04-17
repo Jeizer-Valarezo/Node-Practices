@@ -1,5 +1,5 @@
 const express = require('express');
-const { setupDb } = require('./controllers/planets');
+const { setupDb } = require('./controllers/db');
 const planetRouter = require('./planetRouter');
 
 const app = express();

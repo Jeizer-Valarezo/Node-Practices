@@ -67,25 +67,6 @@ const createImage = async (req, res) => {
   }
 };
 
-const setupDb = async () => {
-  try {
-    await db.none(`
-      DROP TABLE IF EXISTS planets;
 
-      CREATE TABLE planets (
-        id SERIAL NOT NULL PRIMARY KEY,
-        name TEXT NOT NULL,
-        image TEXT
-      );
-    `);
 
-    await db.none(`INSERT INTO planets (name) VALUES ('Earth')`);
-    await db.none(`INSERT INTO planets (name) VALUES ('Mars')`);
-
-    console.log('Database setup completed');
-  } catch (error) {
-    console.error('Error setting up database:', error.message);
-  }
-};
-
-module.exports = { getAll, getOneById, create, updateById, deleteById, createImage, setupDb };
+module.exports = { getAll, getOneById, create, updateById, deleteById, createImage };
