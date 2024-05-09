@@ -1,13 +1,13 @@
 const express = require('express');
 const { setupDb } = require('./controllers/db');
-const planetRouter = require('./planetRouter');
+const router = require('./Router');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.use(planetRouter);
+app.use(router);
 
 setupDb()
   .then(() => {

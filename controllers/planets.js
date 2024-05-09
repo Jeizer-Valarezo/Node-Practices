@@ -1,12 +1,12 @@
 const { Request, Response } = require('express');
-const db = require('./db');
+const { db } = require('./db');
 
 const getAll = async (req, res) => {
   try {
     const planets = await db.any('SELECT * FROM planets');
     res.json(planets);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.log(error)
   }
 };
 

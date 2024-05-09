@@ -31,12 +31,9 @@ const setupDb = async () => {
     await db.none(
       `INSERT INTO users (username, password) VALUES ('dummy', 'dummy')`
     );
-
-    console.log("Database setup completed");
   } catch (error) {
-    console.error("Error setting up database:", error.message);
+    console.error("Error :", error.message);
   }
 };
-
 
 module.exports = { db, setupDb };
